@@ -1,0 +1,36 @@
+---
+title: "take notes"
+author: "Weixi Chen"
+date: "2021/8/30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## name
+Shea Conaway
+
+##hobbies
+playing squash
+bicycles
+hiking
+
+##undergraduate school
+Princeton University
+
+##pet
+a dog(Russell) a cat(Carl)
+
+##music
+White Stripes
+Radiohead(band name)
+
+##book
+The Double(fiction novel)
+
+##Favorite course
+Political Science
+
+
