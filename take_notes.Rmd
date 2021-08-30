@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## name
-shea Conaway
+Shea Conaway
 
 ##hobbies
 playing squash
