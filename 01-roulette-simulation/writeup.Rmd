@@ -1,0 +1,268 @@
+---
+title: "01-roulette-simulation"
+author: "Weixi Chen"
+date: "`r format(Sys.time(), '%m %d, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    number_sections: yes
+    toc_depth: 3
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction 
+
+Today, we're going to share some information about a traditional game of chance, Roulette. We also imagine a gambler using the “Martingale” strategy to play this game, and simulate the gambler's earnings(or losses).
+
+## Roulette game and its rules
+
+A roulette table composed of 38 (or 37) evenly sized pockets on a wheel. The pockets are colored red, black, or green. The pockets are also numbered. Roulette is a game of chance in which a pocket is randomly selected. Gamblers may wager on several aspects of the outcome. For example, one may place a wager that the randomly selected pocket will be red or odd numbered or will be a specific number.
+
+For this blog, we used the roulette with 38 pockets of which 2 are green, 18 are red, and 18 are black. The payout for a bet on black (or red) is \$1 for each \$1 wagered. This means that if a gambler bets \$1 on black and the randomly selected pocket is black, then the gambler will get the original \$1 wager and an additional \$1 as winnings.
+
+Here is an example of the roulette we used:
+
+![Roulette we used](C:/Users/lenovo/Desktop/roulette.png){#id .class width=50% height=50%}
+
+## the “Martingale” strategy
+
+The “Martingale” strategy is a classic roulette strategy, which had the gambler double the bet after every loss, so that the first win would recover all previous losses plus win a profit equal to the original stake. Here is a simplified steps for the “Martingale” strategy:
+
+![the “Martingale” strategy](C:/Users/lenovo/Desktop/the “Martingale” strategy.png){#id .class width=50% height=50%}
+
+Now, we are going to do some simulations for an imagined gambler playing the roulette game with the “Martingale” strategy.
+
+# Simulations
+
+## Clarifications of the parameters
+
+First, we need to define some parameters to make the problem more clear. 
+
+|Parameter           | starting value                          |
+|:------------------:|:---------------------------------------:|
+|starting_budget     |\$200                                    |
+|winning_threshold   |\$300 (starting_budget + \$100 winnings) |
+|max_games           |1000 plays                               |
+|max_wager           |\$100                                    |
+
+## Simulation code
+
+Then, we're going to talk about the code for simulation and its explanations.
+
+```{r}
+
+#Define a function to simulate the result for one play, which is a random color through "red", "black", and "green" with a probability of {18/38, 18/38, 2/38}
+single_spin <- function(){
+  possible_outcomes <- c(rep("red",18), rep("black",18), rep("green",2))
+  sample(possible_outcomes, 1)
+}
+
+#Define a function to set the wager for one play. If the outcome for last play is "red", then the gambler need to bet $1 on red in this play, or the gambler need to bet the minimum value of {"previous_wager", "max_wager", "current_budget"} on "red".
+martingale_wager <- function(
+  previous_wager
+  , previous_outcome
+  , max_wager
+  , current_budget
+){
+  if(previous_outcome == "red") return(1)
+  min(2*previous_wager, max_wager, current_budget)
+}
+
+#Define a function to simulate the gambler's status(current amount of all variables and parameters) after one play. In this function, we need to define a data.frame named "out" to save the gambler's status and become the output object.
+one_play <- function(previous_ledger_entry, max_wager){
+  # Create a copy of the input object that will become the output object
+  out <- previous_ledger_entry
+  out[1, "game_index"] <- previous_ledger_entry[1, "game_index"] + 1
+  out[1, "starting_budget"] <- previous_ledger_entry[1, "ending_budget"]
+  out[1, "wager"] <- martingale_wager(
+    previous_wager = previous_ledger_entry[1, "wager"]
+    , previous_outcome = previous_ledger_entry[1, "outcome"]
+    , max_wager = max_wager
+    , current_budget = out[1, "starting_budget"]
+  )
+  out[1, "outcome"] <- single_spin()
+  out[1, "ending_budget"] <- out[1, "starting_budget"] + 
+    ifelse(out[1, "outcome"] == "red", +1, -1)*out[1, "wager"]
+  return(out)
+}
+
+#Define a function to simulate the process of one series play and named it as "one_series". In this function, we set a data.frame called "ledger" to record the gambler's status through the game and initialize the value of all parameters and variables in it.
+one_series <- function(
+  max_games, starting_budget, winning_threshold, max_wager
+){
+  # Initialize ledger
+  ledger <- data.frame(
+      game_index = 0:max_games
+    , starting_budget = NA_integer_
+    , wager = NA_integer_
+    , outcome = NA_character_
+    , ending_budget = NA_integer_
+  )
+  ledger[1, "wager"] <- 1
+  ledger[1, "outcome"] <- "red"
+  ledger[1, "ending_budget"] <- starting_budget
+  for(i in 2:nrow(ledger)){
+    #After initialization, we will simulate the game and save the gambler's status after     each play into a row of "ledger". We will also use a defined function named            "stopping_rule" to decide whether the game should be ended. 
+    ledger[i,] <- one_play(ledger[i-1,], max_wager)
+    if(stopping_rule(ledger[i,], winning_threshold)) break
+  }
+  # Return non-empty portion of ledger
+  ledger[2:i, ]
+}
+
+#Define a function to claim the stopping rules of the game and play a role as judge whether the game should be ended in the main function "one_series".
+stopping_rule <- function(
+  ledger_entry
+  , winning_threshold
+){
+  ending_budget <- ledger_entry[1, "ending_budget"]
+  if(ending_budget <= 0) return(TRUE)
+  if(ending_budget >= winning_threshold) return(TRUE)
+  FALSE
+}
+
+#Define a function to calculate the earning(or losses) of one series play through ending_budget(the ending budget after the last play) minus starting_budget(the starting budget before the first play)
+profit <- function(ledger){
+  n <- nrow(ledger)
+  profit <- ledger[n, "ending_budget"] - ledger[1, "starting_budget"]
+  return(profit)
+}
+
+```
+
+## Average earnings(or loses) of a gambler
+
+In this section, we plan to use the simulation code above to calculate the average earnings(or losses) of a gambler that uses this strategy. We assign the value of parameters according to the table in section "Clarifications of the parameters" and run the following code.
+
+```{r}
+
+#We replicate the simulation process for 1000 times and collect the ending_budget of each time, so we can get an approximate value of the average earnings(or losses) of a gambler that uses this strategy.
+#Define a function called "earnings" to get the final earnings(or losses) of each game.
+set.seed(1)
+earnings <- function(max_games, starting_budget, winning_threshold, max_wager) {
+  a <- one_series(max_games, starting_budget, winning_threshold, max_wager)
+  return(a[length(a[,1]),5])
+}
+average_earnings = mean(replicate(1000,earnings(1000,200,300,100)))
+200-average_earnings
+#An approximate value of the average earnings is -46.816.
+
+```
+As the code showed, the strategy may be not profitable in such settings, and it will make the gambler lose approximately \$46.816. We also choose two imagined gamblers as the profitable example and the lossy example.
+
+```{r}
+
+set.seed(2)
+gambler_1 <- one_series(1000,200,300,100) 
+plot(x = gambler_1$game_index, y = gambler_1$ending_budget, type = "l", lwd = 5, xlab = "Game Index", ylab = "Budget")
+
+```
+The gambler_1 above is a profitable example.
+
+```{r}
+
+set.seed(4)
+gambler_2 <- one_series(1000,200,300,100) 
+plot(x = gambler_2$game_index, y = gambler_2$ending_budget, type = "l", lwd = 5, xlab = "Game Index", ylab = "Budget")
+
+```
+The gambler_2 above is a lossy example, who maintain profitable after around 200 plays and spend out the money after around 250 plays.
+
+# Impact of parameters on average earnings
+
+Now, we're going to change the value of the parameters and check if they have an impact on the average earnings.
+
+## max_games
+
+In the code below, we set the max games from 600 to 1500 with a 100 interval. With each "max_games" value, we replicate the process for 500 times and get the average earnings using the "earnings" function we define at section 2.3.
+
+```{r}
+
+set.seed(5)
+average_earnings1 <- c()
+for (i in 1:10) {
+  average_earnings1[i] <- mean(replicate(500,earnings(500+i*100,200,300,100)))-200
+}
+plot(x = seq(600, 1500, 100), y = average_earnings1, type = "l", lwd = 5, xlab = "Max Games", ylab = "Average Earnings")
+
+
+```
+Through the figure we can find out that the "max_games" parameter may have no impact on the average earnings, because the line fluctuates without an obvious tendency.
+
+## starting_budget
+
+In the code below, we set the starting budget from 200 to 400 with a 10 interval. With each "starting_budget" value, we replicate the process for 400 times and get the average earnings using the "earnings" function we define at section 2.3.
+
+```{r}
+
+set.seed(6)
+average_earnings2 <- c()
+for (i in 1:21) {
+  average_earnings2[i] <- mean(replicate(400,earnings(1000,190+i*10,300,100)))-200
+}
+plot(x = seq(200, 400, 10), y = average_earnings2, type = "l", lwd = 5, xlab = "Starting Budget", ylab = "Average Earnings")
+
+
+```
+Through the figure we can find out that the "starting_budget" parameter has a positive correlation to the average earnings, because the average earnings nearly show the same trend as the starting budget.
+
+## winning_threshold
+
+In the code below, we set the winning threshold from 300 to 500 with a 20 interval. With each "winning_threshold" value, we replicate the process for 500 times and get the average earnings using the "earnings" function we define at section 2.3.
+
+```{r}
+
+set.seed(7)
+average_earnings3 <- c()
+for (i in 1:11) {
+  average_earnings3[i] <- mean(replicate(500,earnings(1000,200,280+20*i,100)))-200
+}
+plot(x = seq(300, 500, 20), y = average_earnings3, type = "l", lwd = 5, xlab = "Winning Threshold", ylab = "Average Earnings")
+
+
+```
+Through the figure we can find out that the "winning_threshold" parameter has a negative correlation to the average earnings, because the average earnings show the inverse trend as the winning threshold.
+
+## max_wager
+
+In the code below, we set the max wager from 50 to 150 with a 10 interval. With each "max_wager" value, we replicate the process for 500 times and get the average earnings using the "earnings" function we define at section 2.3.
+
+```{r}
+
+set.seed(8)
+average_earnings4 <- c()
+for (i in 1:11) {
+  average_earnings4[i] <- mean(replicate(500,earnings(1000,200,300,40+10*i)))-200
+}
+plot(x = seq(50, 150, 10), y = average_earnings4, type = "l", lwd = 5, xlab = "Max Wager", ylab = "Average Earnings")
+
+
+```
+Through the figure we can find out that the "max_wager" parameter has a weak positive correlation to the average earnings.
+
+# Average number of plays
+
+In this section we will calculate the average number of plays before the gambler stopping.
+
+```{r}
+
+set.seed(9)
+roulette_time <- function(max_games, starting_budget, winning_threshold, max_wager) {
+  b <- one_series(max_games, starting_budget, winning_threshold, max_wager)
+  return(b[length(b[,1]),1])
+}
+average_time = mean(replicate(1000,roulette_time(1000,200,300,100)))
+average_time
+
+```
+The average number of plays before the gambler stopping is around 199.811.
+
+# Limitations and uncertainty
+
+1.Because of the limited storage and running speed of personal laptop, we can't simulate the process for a large amount of times, which means that the results we got may be not a very good approximation of the real value.
+2.We made some simplifications and didn't use as much value of the parameters as possible to compare the difference.
