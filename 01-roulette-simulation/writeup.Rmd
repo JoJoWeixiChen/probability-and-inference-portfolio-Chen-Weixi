@@ -144,15 +144,26 @@ In this section, we plan to use the simulation code above to calculate the avera
 #We replicate the simulation process for 1000 times and collect the ending_budget of each time, so we can get an approximate value of the average earnings(or losses) of a gambler that uses this strategy.
 #Define a function called "earnings" to get the final earnings(or losses) of each game.
 set.seed(1)
+#We store the output of function "one_series", which is designed to simulate the roulette for one time with input values of parameters, into "a" and then we return the value which located in the last row and the fifth column of "a". This value is the ending_budget for the last play of one series game, which means the money the gambler has in the end of one series game. So, we can run the function "earnings" and get a simulated result of the left money of a gambler that uses this strategy.
 earnings <- function(max_games, starting_budget, winning_threshold, max_wager) {
   a <- one_series(max_games, starting_budget, winning_threshold, max_wager)
   return(a[length(a[,1]),5])
 }
-average_earnings = mean(replicate(1000,earnings(1000,200,300,100)))
-200-average_earnings
+#After defining the function "earnings", now we can move on to a replication and get a simulated average value. Now, we use the function "replicate", which helps us to run the function "earnings" for 1000 times and return back a vector with 1000 values (each value represents a simulated left money for one play). Then, we can use the function "mean" and obtain the average left money of a gambler uses this strategy. 200 minus the simulated left money is an approximate value of the average earnings(or losses) of a gambler that uses this strategy. 
+average_earnings = 200 - mean(replicate(1000,earnings(1000,200,300,100)))
 #An approximate value of the average earnings is -46.816.
 
+#All of the code above aims to get an approximate value of the average earnings(or #losses). In this process, we define a function "single_spin" first, which aims to return #back a result of the roulette. Then, we use the function "martingale_wager" to get the #wager of one game. After that, we utilize these two functions and define a new function #"one_play", which simulates the process of one play of the roulette and store the new #value of parameters into the data frame. At last, we define a function "one_series", #which establishes a new data frame and replicates the function "one_play" to store the #values of parameters for every time. We also define a function "stopping_rule" to help #"one_series" get the stopping point of replications. The function "one_series" returns #back all of the simulated values of parameters during a series of roulette game, and we #can use the last value of "ending_budget" to calculate the average earnings(or losses) #of a gambler uses this strategy.
+
 ```
+
+
+
+
+
+
+
+
 As the code showed, the strategy may be not profitable in such settings, and it will make the gambler lose approximately \$46.816. We also choose two imagined gamblers as the profitable example and the lossy example.
 
 ```{r}
@@ -179,14 +190,14 @@ Now, we're going to change the value of the parameters and check if they have an
 
 ## max_games
 
-In the code below, we set the max games from 600 to 1500 with a 100 interval. With each "max_games" value, we replicate the process for 500 times and get the average earnings using the "earnings" function we define at section 2.3.
+In the code below, we set the max games from 600 to 1500 with a 100 interval. With each "max_games" value, we replicate the process for 5000 times and get the average earnings using the "earnings" function we define at section 2.3.
 
 ```{r}
 
 set.seed(5)
 average_earnings1 <- c()
 for (i in 1:10) {
-  average_earnings1[i] <- mean(replicate(500,earnings(500+i*100,200,300,100)))-200
+  average_earnings1[i] <- mean(replicate(5000,earnings(500+i*100,200,300,100)))-200
 }
 plot(x = seq(600, 1500, 100), y = average_earnings1, type = "l", lwd = 5, xlab = "Max Games", ylab = "Average Earnings")
 
@@ -196,14 +207,14 @@ Through the figure we can find out that the "max_games" parameter may have no im
 
 ## starting_budget
 
-In the code below, we set the starting budget from 200 to 400 with a 10 interval. With each "starting_budget" value, we replicate the process for 400 times and get the average earnings using the "earnings" function we define at section 2.3.
+In the code below, we set the starting budget from 200 to 400 with a 10 interval. With each "starting_budget" value, we replicate the process for 5000 times and get the average earnings using the "earnings" function we define at section 2.3.
 
 ```{r}
 
 set.seed(6)
 average_earnings2 <- c()
 for (i in 1:21) {
-  average_earnings2[i] <- mean(replicate(400,earnings(1000,190+i*10,300,100)))-200
+  average_earnings2[i] <- mean(replicate(5000,earnings(1000,190+i*10,300,100)))-200
 }
 plot(x = seq(200, 400, 10), y = average_earnings2, type = "l", lwd = 5, xlab = "Starting Budget", ylab = "Average Earnings")
 
@@ -213,14 +224,14 @@ Through the figure we can find out that the "starting_budget" parameter has a po
 
 ## winning_threshold
 
-In the code below, we set the winning threshold from 300 to 500 with a 20 interval. With each "winning_threshold" value, we replicate the process for 500 times and get the average earnings using the "earnings" function we define at section 2.3.
+In the code below, we set the winning threshold from 300 to 500 with a 20 interval. With each "winning_threshold" value, we replicate the process for 5000 times and get the average earnings using the "earnings" function we define at section 2.3.
 
 ```{r}
 
 set.seed(7)
 average_earnings3 <- c()
 for (i in 1:11) {
-  average_earnings3[i] <- mean(replicate(500,earnings(1000,200,280+20*i,100)))-200
+  average_earnings3[i] <- mean(replicate(5000,earnings(1000,200,280+20*i,100)))-200
 }
 plot(x = seq(300, 500, 20), y = average_earnings3, type = "l", lwd = 5, xlab = "Winning Threshold", ylab = "Average Earnings")
 
@@ -230,14 +241,14 @@ Through the figure we can find out that the "winning_threshold" parameter has a 
 
 ## max_wager
 
-In the code below, we set the max wager from 50 to 150 with a 10 interval. With each "max_wager" value, we replicate the process for 500 times and get the average earnings using the "earnings" function we define at section 2.3.
+In the code below, we set the max wager from 50 to 150 with a 10 interval. With each "max_wager" value, we replicate the process for 5000 times and get the average earnings using the "earnings" function we define at section 2.3.
 
 ```{r}
 
 set.seed(8)
 average_earnings4 <- c()
 for (i in 1:11) {
-  average_earnings4[i] <- mean(replicate(500,earnings(1000,200,300,40+10*i)))-200
+  average_earnings4[i] <- mean(replicate(5000,earnings(1000,200,300,40+10*i)))-200
 }
 plot(x = seq(50, 150, 10), y = average_earnings4, type = "l", lwd = 5, xlab = "Max Wager", ylab = "Average Earnings")
 
