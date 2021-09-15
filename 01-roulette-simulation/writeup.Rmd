@@ -157,13 +157,6 @@ average_earnings = 200 - mean(replicate(1000,earnings(1000,200,300,100)))
 
 ```
 
-
-
-
-
-
-
-
 As the code showed, the strategy may be not profitable in such settings, and it will make the gambler lose approximately \$46.816. We also choose two imagined gamblers as the profitable example and the lossy example.
 
 ```{r}
