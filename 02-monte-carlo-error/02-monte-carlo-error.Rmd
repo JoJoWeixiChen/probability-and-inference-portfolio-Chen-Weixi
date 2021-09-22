@@ -4,13 +4,31 @@ author: "Weixi Chen"
 date: "2021/9/13"
 output: html_document
 ---
+# Preparation
+
+## Library
+
 First, we need to library the packages we will use in tackling this problem, which are "dplyr" for making data into the forms we needed and "ggplot2" for data visualization.
+
 ```{r}
 library(dplyr)
 library(ggplot2)
 ```
 
-Then, we use the function "expand.grid", which let us to make a data.frame with 70 rows(the amount of values in variable1 multiply the amount of values in variable2) and 4 variables with the same length of rows. And the four variables are "size", "prob", "absolute_error", and "relative_error". 
+## Clarification
+
+Then, we will clarify some definitions to make this blog more comprehensible.
+
+Monte Carlo error: The Monte Carlo error means the standard deviation of the Monte Carlo estimator, and the Monte Carlo estimator is the estimated value of parameter we got using the Monte Carlo methods.
+
+relative error: The relative error has an expression as :$|\hat{p}-p|/p$, where the $\hat{p}$ means the estimated value we get through our prediction, and $p$ means the actual value of the parameter we are interested in.
+
+absolute error: The absolute error is the absolute value of the difference between predicted parameter value and real parameter value. It has an expression as:$|\hat{p}-p|$, where the $\hat{p}$ means the estimated value we get through our prediction, and $p$ means the actual value of the parameter we are interested in.
+
+# Simulation
+
+Next, we use the function "expand.grid", which let us to make a data.frame with 70 rows(the amount of values in variable1 multiply the amount of values in variable2) and 4 variables with the same length of rows. And the four variables are "size", "prob", "absolute_error", and "relative_error". 
+
 ```{r}
 df <- expand.grid(size = 2^c(2:15), 
                   prob = c(0.01, 0.05, 0.10, 0.25, 0.50), 
@@ -19,8 +37,8 @@ df <- expand.grid(size = 2^c(2:15),
                   )
 ```
 
+We set a circulation to calculate the absolute error and relative error in different situations(different parameters values for the parameter "size" and parameter "probability" of binomial distribution), we also let the simulation goes for 10000 times for each situation, then we calculate the average results and store them into "absolute_error" and "relative_error" in "df" separately.
 
-We set a circulation to calculate the absolute error and relative error in different situations(different parameters values for the paremeter "size" and parameter "probability" in function "rbinom"), we also let the simulation goes for 10000 times for each situation, then we calculate the average results and store them into "absolute_error" and "relative_error" in "df" separately.
 ```{r}
 N = 1e5
 for (i in 1:nrow(df)) {
@@ -31,49 +49,41 @@ for (i in 1:nrow(df)) {
 }
 ```
 
+# Plot
 
-Plot a graph to show the relationship between absolute error and size. There are five lines in the graph, and each one for a different value for the parameter "probability".
+In the end, we are going to plot two graphs to show the relationships between absolute error and experiment size, relative error and experiment size, separately.
+
+Plot a graph to show the relationship between absolute error and experiment size. There are five lines in the graph, and each one for a different value of the parameter "probability".
+
 ```{r}
-  p <- ggplot(df[1:14, 1:4], aes(x = size, y = absolute_error)) +
-           geom_line(col = "red") +
-           labs(x = "N", y = "Absolute Error")
-  p <- p + 
-    geom_line(aes(x = size, y = absolute_error), data = df[15:28, 1:4], col = "blue")
-    
-  p <- p + 
-    geom_line(aes(x = size, y = absolute_error), data = df[29:42, 1:4], col = "green") 
-    
-    
-  p <- p + 
-    geom_line(aes(x = size, y = absolute_error), data = df[43:56, 1:4], col = "purple") 
-    
-    
-  p <- p + 
-    geom_line(aes(x = size, y = absolute_error), data = df[57:70, 1:4], col = "orange") 
+  p <- df %>%
+        ggplot(aes(x = size, y = absolute_error, color = factor(prob))) +
+        geom_point() +
+        geom_line(aes(group = prob)) +
+        scale_x_continuous(trans = "log2") +
+  #You can use this code to generate the results with the y-axis is on the log10 scale.
+        #scale_y_continuous(trans = "log10") +
+        labs(x = "N($log_2 scale$)", y = "Absolute Error")
+  
   p
 ```
 
+Plot a graph to show the relationship between relative error and experiment size. There are five lines in the graph, and each one for a different value for the parameter "probability".
 
-Plot a graph to show the relationship between relative error and size. There are five lines in the graph, and each one for a different value for the parameter "probability".
 ```{r}
-  p1 <- ggplot(df[1:14, 1:4], aes(x = size, y = relative_error)) +
-    geom_line(col = "red") +
-    labs(x = "N", y = "Relative Error")
-  p1 <- p1 + 
-    geom_line(aes(x = size, y = relative_error), data = df[15:28, 1:4], col = "blue")
+  p1 <- df %>%
+        ggplot(aes(x = size, y = relative_error, color = factor(prob))) +
+        geom_point() +
+        geom_line(aes(group = prob)) +
+        scale_x_continuous(trans = "log2") +
+  #You can use this code to generate the results with the y-axis is on the log10 scale.
+        #scale_y_continuous(trans = "log10") +
+        labs(x = "N($log_2 scale$)", y = "Relative Error")
   
-  p1 <- p1 + 
-    geom_line(aes(x = size, y = relative_error), data = df[29:42, 1:4], col = "green") 
-  
-  
-  p1 <- p1 + 
-    geom_line(aes(x = size, y = relative_error), data = df[43:56, 1:4], col = "purple") 
-  
-  
-  p1 <- p1 + 
-    geom_line(aes(x = size, y = relative_error), data = df[57:70, 1:4], col = "orange")
   p1
 ```
 
-In the graph, we can find out that both of the absolute error and relative error converge to zero when the size gets larger. When the probability is smaller, it may have a fast speed to converge to zero when the size gets larger. And in comparison, the absolute error may have a fast speed to converge to zero than the speed of relative error when the value of parameter size and probability are fixed.
+# Conclusion
+
+In the graph, we can find out that both of the absolute error and relative error converge to zero when the size gets larger. When the probability is smaller, it may have a fast speed to converge to zero when the size gets larger. And in comparison, the relative error may have a fast speed to converge to zero than the speed of absolute error when the value of parameter size and probability are fixed.
   
