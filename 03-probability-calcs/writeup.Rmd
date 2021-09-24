@@ -1,6 +1,8 @@
 ---
 title: "writeup"
-output: html_notebook
+author: "Weixi Chen"
+date: "2021/9/24"
+output: html_document
 ---
 
 # Background
