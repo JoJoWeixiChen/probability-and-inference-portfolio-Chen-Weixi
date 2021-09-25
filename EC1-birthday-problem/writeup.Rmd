@@ -1,0 +1,100 @@
+---
+title: "writeup"
+output: html_notebook
+---
+
+# Birthday Problem
+
+In a class of N individuals, what is the probability that at least two students will share a birthday (if we ignore leap day)?
+
+# Analytical Solution
+
+For the analytical solution, we plan to solve this problem using probability knowledge. Suppose there are n students in the class. We can get the amount of different birthday combinations for the n students is $(365)^n$. And the combinations which meets the condition that each student has a different birthday in each combination have the amount as $C_{365}^n*n!$(The n students are different persons, so we need to multiply n!). So based on the sum-to-one rule, the probability that at least two students will share a birthday (if we ignore leap day) is 1-$\frac{C_{365}^n}{(365)^n}*n!$.
+
+Suppose the amount of students in the class changes from 1 to 80, we can plot the relationship of the probability and size of students with following code:
+
+```{r}
+library(ggplot2)
+# Set size to store the amount of students.
+size <- seq(1, 80, by = 1)
+# Set an empty vector prob1 to store the probability.
+prob1 <- c()
+# Use for loop to calculate probability for different size of students and store the results.
+for (i in size) {
+  prob1 <- c(prob1, 1 - choose(365, i)*factorial(i)/365**i)
+}
+
+# Define a data.frame named data1 to store data "size" and "prob1".
+data1 <- data.frame(size = size, probability =prob1, method = "Analytic solution")
+# Plot a scatterplot which shows the relationship of the probability and size.
+picture1 <- ggplot(data = data1, aes(x = size, y = probability)) +
+            geom_point() +
+            scale_y_continuous(breaks = seq(0, 1, 0.2)) +
+            xlab("Size of group") +
+            ylab("Probability of at least one shared birthday") +
+            theme_bw()
+# Show the probability.
+picture1
+```
+
+From the graph, we can find out that the probability of at least one shared birthday goes up as the size of students going up. And the probability is very closed to 1 when the size goes up to 60.
+
+# Simulation Solution
+
+Now, we are going to use simulation solution to solve this problem. We will set a virtual class with the amount of students from 1 to 80, simulate a virtual birthday for each virtual class' students, set a for loop to repeatedly create virtual class for each amount of students and calculate the correponding probability.
+
+```{r}
+# Set a random number seed.
+set.seed(1)
+# Set size to store the amount of students.
+size <- seq(1, 80, by = 1)
+# Set an empty vector prob2 to store the probability.
+prob2 <- c()
+# Use for loop to simulate probability for different size of students and store the results.
+for (i in 1:80) {
+# Define m to store the amount of virtual classes that have at least one share birthday.
+  m = 0
+# Use for loop to simulate 10000 virtual classes for each amount of students.
+  for (k in 1:10000) {
+# Simulate the birthday for a virtual class.
+    birthday <- sample(1:365, size = i, replace = TRUE)
+# Judge if the students in a virtual class have different birthday from each other.
+    if(length(unique(birthday)) != length(birthday)) {
+# If there are students share one birthdat, m need to add 1.
+      m = m +1
+    }
+  }
+# Record the predicted probability of at least one share birthday and store it in prob2.
+  prob2 <- c(prob2, m/10000)
+}
+
+# Define a data.frame named data2 to store data "size" and "prob2".
+data2 <- data.frame(size = size, probability =prob2, method = "Simulation solution")
+# Plot a scatterplot which shows the relationship of the predicted probability and size.
+picture2 <- ggplot(data = data2, aes(x = size, y = probability)) +
+            geom_point() +
+            scale_y_continuous(breaks = seq(0, 1, 0.2)) +
+            xlab("Size of group") +
+            ylab("Probability of at least one shared birthday") +
+            theme_bw()
+# Show the probability.
+picture2
+```
+
+# Merge the Graph
+
+Merge the two graph into 1 graph.
+
+```{r}
+data3 <- rbind(data1, data2)
+picture3 <- ggplot(data = data3, aes(x = size, y = probability, col = method)) +
+            geom_point() +
+            scale_y_continuous(breaks = seq(0, 1, 0.2)) +
+            xlab("Size of group") +
+            ylab("Probability of at least one shared birthday") +
+            theme_bw()
+# Show the probability.
+picture3
+```
+
+From the graph, we can find out that the "Simulated solution" and the "Analytic solution" have a very closed results, which goes up as the size of group going up and is closed to 1 when the size of group comes up to 60.
