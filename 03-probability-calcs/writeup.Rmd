@@ -20,10 +20,10 @@ answer:
 
 ```{r}
 # We can use the negative binomial distribution to tackle this problem. "pnbinom" is a 
-# function in which we could find out the cumulative distribution values at any point. The # cumulative distribution value at "a" means the sum of probability at points equal to or 
-# less than "a". In this question, We are going to explore the probability that the Braves # win the World Series, which means that the Braves needs to win 4 games during the 7 
-# total games. Thus, we need to calculate sum of the probability that Braves win 4 games 
-# and lose 1 game, win 4 games and lose 2 games, and win 4 games and lose 3 games.
+# function in which we could find out the cumulative distribution values at any point. 
+# The cumulative distribution value at "a" means the sum of probability at points equal 
+# to or less than "a". In this question, We are going to explore the probability that the # Braves win the World Series, which means that the Braves needs to win 4 games during 
+# the 7 total games. Thus, we need to calculate sum of the probability that Braves win 4 # games and lose 1 game, win 4 games and lose 2 games, and win 4 games and lose 3 games.
 p = pnbinom(3, 4, 0.55)
 p
 ```
@@ -42,11 +42,12 @@ p_b <- seq(0.02, 0.98, 0.02)
 p_bw <- c()
 # Set a for loop to calculate the p_bw when p_b changes and save the results.
 for (x in p_b) {
+# For each p_b qual to a fixed value x, the problem is transferred into a similar problem as the question1, so we just need to calculate the pnbinom(3, 4, x) and regard it as the probability that the Braves win the World Series.
   p_bw = c(p_bw, pnbinom(3, 4, x))
 }
 # Plot the graph and show it.
-p <- plot(x = p_b, 
-          y = p_bw, 
+p <- plot(x = p_b[which(p_b >= 0.5)], 
+          y = p_bw[which(p_b >= 0.5)], 
           xlim = c(0.5, 1),
           main = "Probability of the Braves winning the World Series", 
           xlab = "Probability of the Braves winning a head-to-head matchup", 
@@ -54,7 +55,7 @@ p <- plot(x = p_b,
 p
 ```
 
-From the graph, we can find out the probability that the Braves win the World Series goes up when $P_{B}$ goes up; what's more, the speed of P(Braves win World Series)'s increase declines gradually.
+From the graph, we can find out the probability that the Braves win the World Series goes up when $P_{B}$ goes up(in the condition of $P_{B} \geq 0.5$); what's more, the speed of P(Braves win World Series)'s increase declines gradually.
 
 # Question 3
 
@@ -63,12 +64,12 @@ Suppose one could change the World Series to be best-of-9 or some other best-of-
 ```{r}
 # We set the for loop from x=1 to x=100
 for (x in 1:100) {
-# Test if P(Braves win World Series) >= 0.8 under the condition that p_b = 0.55
+# Test if P(Braves win World Series) >= 0.8 under the condition that p_b = 0.55 and series length equal to x. 
   if(pnbinom((x-1)/2, (x+1)/2, 0.55) >= 0.8){
-# Print the stop point x, which is the shortest series length that meet the condition and the corresponding probability P(Braves win World Series|p_b = 0.55)
+# Print the stop point x, which is the shortest series length that meet the condition and the corresponding probability P(Braves win World Series|p_b = 0.55).
     print(x)
     print(pnbinom((x-1)/2, (x+1)/2, 0.55))
-# End the for loop if the x is found.
+# End the for loop because we have found the x we need.
     break
   }
 }
@@ -81,18 +82,19 @@ If one could change the World Series to be best-of-9 or some other best-of-X ser
 What is the shortest series length so that P(Braves win World Series|$P_{B}$ = x)$\ge$0.8? This will be a figure (see below) with PB on the x-axis and series length is the y-axis.
 
 ```{r}
-#Set the probability of p_b and the y_shortest to store the shortest series length when p_b changes.
+#Set the probability of p_b and the y_shortest to store the shortest series length for each p_b when p_b changes.
 p_b <- seq(0.02, 0.98, 0.02)
 y_shortest <- c()
-# We set the for loop from x in p_b and y from 1 to 2000.
+# We set the for loop from x in p_b and y (represents the series length) from 1 to 2000.
 for (x in p_b) {
   for (y in 1:2000) {
-#Check if the stopping rule is met.
+# Check if the stopping rule is met, which means the probability that the Braves win greater or equal to 0.8.
     if(pnbinom((y-1)/2, (y+1)/2, x) >= 0.8){
+# Break the for loop if we find the y_shortest we want.
       break
     }
   }
-#Store the shortest series length.
+# Store the shortest series length.
   y_shortest <- c(y_shortest, y)
 }
 # Plot the graph and show it.
@@ -110,6 +112,10 @@ From the graph we can find out that the shortest series length declines as the p
 # Question 5
 
 Calculate P($P_{B}$ =0.55|Braves win World Series in 7 games) under the assumption that either $P_{B}$ = 0.55 or $P_{B}$ = 0.45. Explain your solution.
+
+Bayes Rule: $P(A | B)*P(B) = P(B | A)*P(A)$
+
+where A and B represent the random event and $P(B)\neq0$, $P(A | B)$ and $P(B | A)$ means the conditional probability that the probability of an event happens based on another event happens.
 
 First, we know that $P(P_{B} = 0.55)$ = 1/2.
 And, based on the Bayes Rule, we can also know that:
