@@ -1,0 +1,333 @@
+---
+title: "writeup"
+output:
+  html_document:
+    df_print: paged
+---
+
+It is common in the analysis of biological data to log transform data representing concentrations or data representing dose response. In this project, I will operate the log transform to different distributions and let's see the results.
+
+# Part 1
+
+## Distribution 1
+
+The first distribution we want to explore is the gamma distribution with shape parameter equal to 3 and scale parameter equal to 1.
+
+Generate a figure of the PDF and CDF. Mark the mean and median in the figure.
+
+```{r}
+# Probability distribution function
+x = seq(0, 20, 0.05)
+y = dgamma(x, shape = 3, scale = 1)
+
+plot(x, y, main="Gamma Probability Distribution Function", ylab = "Density", xlim = c(0, 20), ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+legend("topright", legend = paste("shape=", 3, "scale=", 1), lwd = 2, col = "red")
+abline(v = 3*1, col = "blue")
+text(x = 3, y = 0.8, "mean = 3", pos = 4)
+abline(v = qgamma(0.5, shape = 3, scale = 1), col = "green")
+text(x = 2.67, y = 0.6, "median \n= 2.67", pos = 2)
+```
+
+```{r}
+# Cumulative distribution function
+x = seq(0, 20, 0.05)
+y = pgamma(x, shape = 3, scale = 1)
+
+plot(x, y, main="Gamma Cumulative Distribution Function", ylab = "Cumulative Density", xlim = c(0, 20), ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+legend("right", legend = paste("shape=", 3, "scale=", 1), lwd = 2, col = "red")
+abline(v = 3*1, col = "blue")
+text(x = 3, y = 0.8, "mean = 3", pos = 4)
+abline(v = qgamma(0.5, shape = 3, scale = 1), col = "green")
+text(x = 2.67, y = 0.6, "median \n= 2.67", pos = 2)
+```
+
+Generate a figure of the PDF and CDF of the transformation Y = log(X) random variable. Mark the mean and median in the figure. You may use simulation or analytic methods in order find the PDF and CDF of the transformation.
+
+I use the simulation method to find the PDF and CDF of the transformation.
+
+```{r}
+# Probability distribution function
+set.seed(1)
+x = rgamma(1e6, shape = 3, scale = 1)
+y = log(x)
+plot(density(y), main = "Gamma Probability Distribution Function(Log Transformation)",  xlab = "log(x)", ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+abline(v = mean(y), col = "blue")
+text(x = mean(y), y = 0.8, "mean\n(blue line)", pos = 2)
+abline(v = median(y))
+text(x = median(y), y = 0.7, "median(black line)", pos = 4)
+```
+
+```{r}
+# Cumulative distribution function
+set.seed(2)
+x = rgamma(1e6, shape = 3, scale = 1)
+y = log(x)
+plot(ecdf(y), main = "Gamma Cumulative Distribution Function(Log Transformation)", xlab = "log(x)", ylab = "Cumulative Density", ylim = c(0, 1), col = "red", lwd = 2)
+abline(v = mean(y), col = "blue")
+text(x = mean(y), y = 0.8, "mean\n(blue line)", pos = 2)
+abline(v = median(y))
+text(x = median(y), y = 0.7, "median(black line)", pos = 4)
+```
+
+Generate 1000 samples of size 100. For each sample, calculate the geometric and arithmetic mean. Generate a scatter plot of the geometic and arithmetic sample means. Add the line of identify as a reference line.
+
+```{r}
+x <- matrix(rgamma(1e5, shape = 3, scale = 1), nrow = 1000, ncol = 100)
+geometric_mean <- function(x){
+  exp(mean(log(x)))
+}
+geometric_mean1 <- apply(x, 1, geometric_mean)
+arithmetric_mean1 <- apply(x, 1, mean)
+plot(x = geometric_mean1, y = arithmetric_mean1)
+abline(0, 1)
+```
+
+Generate a histogram of the difference between the arithmetic mean and the geometric mean
+
+```{r}
+difference <- arithmetric_mean1 - geometric_mean1
+hist(difference, main = "Hisyogram of difference between arithmetic and geometric mean")
+```
+
+## Distribution 2
+
+The second distribution we want to explore is the logarithmic normal distribution with $\mu = -1$ and $\sigma = 1$.
+
+Generate a figure of the PDF and CDF. Mark the mean and median in the figure.
+
+```{r}
+# Probability distribution function
+x = seq(0, 20, 0.05)
+y = dlnorm(x, mean = -1, sd = 1)
+
+plot(x, y, main="Logarithmic Normal Probability Distribution Function", ylab = "Density", xlim = c(0, 20), ylim = c(0, 2), col = "red", type = "l", lwd = 2)
+legend("topright", legend = expression(paste(mu, " = -1", sigma, " = 1")), lwd = 2, col = "red")
+abline(v = exp(1/2), col = "blue")
+text(x = exp(1/2), y = 0.8, "mean = 1.65", pos = 4)
+abline(v = exp(-1), col = "green")
+text(x = exp(-1), y = 1.5, "median \n= 0.37", pos = 4)
+```
+
+```{r}
+# Cumulative distribution function
+x = seq(0, 20, 0.05)
+y = plnorm(x, mean = -1, sd = 1)
+
+plot(x, y, main="Logarithmic Normal Cumulative Distribution Function", ylab = "Cumulative Density", xlim = c(0, 20), ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+legend("right", legend = expression(paste(mu, " = -1", sigma, " = 1")), lwd = 2, col = "red")
+abline(v = exp(1/2), col = "blue")
+text(x = exp(1/2), y = 0.8, "mean = 1.65", pos = 4)
+abline(v = exp(-1), col = "green")
+text(x = exp(-1), y = 0.5, "median = 0.37", pos = 4)
+```
+
+Generate a figure of the PDF and CDF of the transformation Y = log(X) random variable. Mark the mean and median in the figure. You may use simulation or analytic methods in order find the PDF and CDF of the transformation.
+
+I use the simulation method to find the PDF and CDF of the transformation.
+
+```{r}
+# Probability distribution function
+set.seed(3)
+x = rlnorm(1e6, mean = -1, sd = 1)
+y = log(x)
+plot(density(y), main = "Logarithmic Normal Probability Distribution Function(Log Transformation)",  xlab = "log(x)", ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+abline(v = mean(y))
+text(x = mean(y), y = 0.8, "mean", pos = 2)
+abline(v = median(y))
+text(x = median(y), y = 0.7, "median", pos = 4)
+```
+
+```{r}
+# Cumulative distribution function
+set.seed(4)
+x = rlnorm(1e6, mean = -1, sd = 1)
+y = log(x)
+plot(ecdf(y), main = "Logarithmic Normal Cumulative Distribution Function(Log Transformation)", xlab = "log(x)", ylab = "Cumulative Density", ylim = c(0, 1), col = "red", lwd = 2)
+abline(v = mean(y))
+text(x = mean(y), y = 0.8, "mean", pos = 2)
+abline(v = median(y))
+text(x = median(y), y = 0.7, "median", pos = 4)
+```
+
+Generate 1000 samples of size 100. For each sample, calculate the geometric and arithmetic mean. Generate a scatter plot of the geometic and arithmetic sample means. Add the line of identify as a reference line.
+
+```{r}
+x <- matrix(rlnorm(1e5, mean = -1, sd = 1), nrow = 1000, ncol = 100)
+geometric_mean <- function(x){
+  exp(mean(log(x)))
+}
+geometric_mean1 <- apply(x, 1, geometric_mean)
+arithmetric_mean1 <- apply(x, 1, mean)
+plot(x = geometric_mean1, y = arithmetric_mean1)
+abline(0,1)
+```
+
+Generate a histogram of the difference between the arithmetic mean and the geometric mean
+
+```{r}
+difference <- arithmetric_mean1 - geometric_mean1
+hist(difference, main = "Hisyogram of difference between arithmetic and geometric mean")
+```
+
+## Distribution 3
+
+The third distribution we want to explore is the uniform distribution between 0 and 12.
+
+Generate a figure of the PDF and CDF. Mark the mean and median in the figure.
+
+```{r}
+# Probability distribution function
+x = seq(0, 12, 0.01)
+y = dunif(x, 0, 12)
+
+plot(x, y, main="Uniform Probability Distribution Function", ylab = "Density", xlim = c(0, 15), ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+legend("topright", legend = paste("min=", 0, "max=", 12), lwd = 2, col = "red")
+abline(v = 6, col = "blue")
+text(x = 6, y = 0.8, "mean = 6", pos = 4)
+abline(v = 6, col = "green")
+text(x = 6, y = 0.6, "median = 6", pos = 2)
+```
+
+```{r}
+# Cumulative distribution function
+x = seq(0, 12, 0.01)
+y = punif(x, 0, 12)
+
+plot(x, y, main="Uniform Cumulative Distribution Function", ylab = "Cumulative Density", xlim = c(0, 15), ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+legend("right", legend = paste("min=", 0, "max=", 12), lwd = 2, col = "red")
+abline(v = 6, col = "blue")
+text(x = 6, y = 0.8, "mean = 6", pos = 4)
+abline(v = 6, col = "green")
+text(x = 6, y = 0.6, "median = 6", pos = 2)
+```
+
+Generate a figure of the PDF and CDF of the transformation Y = log(X) random variable. Mark the mean and median in the figure. You may use simulation or analytic methods in order find the PDF and CDF of the transformation.
+
+I use the simulation method to find the PDF and CDF of the transformation.
+
+```{r}
+# Probability distribution function
+set.seed(5)
+x = runif(1e6, 0, 12)
+y = log(x)
+plot(density(y), main = "Uniform Probability Distribution Function(Log Transformation)",  xlab = "log(x)", ylim = c(0, 1), col = "red", type = "l", lwd = 2)
+abline(v = mean(y), col = "blue")
+text(x = mean(y), y = 0.8, "mean(blue line)", pos = 2)
+abline(v = median(y))
+text(x = median(y), y = 0.7, "median(black line)", pos = 2)
+```
+
+```{r}
+# Cumulative distribution function
+set.seed(6)
+x = runif(1e6, 0, 12)
+y = log(x)
+plot(ecdf(y), main = "Uniform Cumulative Distribution Function(Log Transformation)", xlab = "log(x)", ylab = "Cumulative Density", ylim = c(0, 1), col = "red", lwd = 2)
+abline(v = mean(y), col = "blue")
+text(x = mean(y), y = 0.8, "mean(blue line)", pos = 2)
+abline(v = median(y))
+text(x = median(y), y = 0.7, "median(black line)", pos = 2)
+```
+
+Generate 1000 samples of size 100. For each sample, calculate the geometric and arithmetic mean. Generate a scatter plot of the geometic and arithmetic sample means. Add the line of identify as a reference line.
+
+```{r}
+x <- matrix(runif(1e5, 0, 12), nrow = 1000, ncol = 100)
+geometric_mean <- function(x){
+  exp(mean(log(x)))
+}
+geometric_mean1 <- apply(x, 1, geometric_mean)
+arithmetric_mean1 <- apply(x, 1, mean)
+plot(x = geometric_mean1, y = arithmetric_mean1)
+abline(0,1)
+```
+
+Generate a histogram of the difference between the arithmetic mean and the geometric mean
+
+```{r}
+difference <- arithmetric_mean1 - geometric_mean1
+hist(difference, main = "Hisyogram of difference between arithmetic and geometric mean")
+```
+
+# Part 2
+
+The arithmetric mean of c($X_1, X_2,..., X_n$) is ($X_1+X_2+...+X_n$)/n.
+
+The geometric mean of c($X_1, X_2,..., X_n$) is $\sqrt[n]{X_1+X_2+...+X_n}$, and we can calculate the value by using exp(($log(X_1)+log(X_2)+...+log(X_n)$)/n).
+
+I will use simulation method to show this rule.
+
+```{r}
+# Set the random number seed.
+set.seed(7)
+arithmetric_mean2 <- c()
+geometric_mean2 <- c()
+for (i in 1:1e4) {
+# Generate uniform distribution random number and calculate their arithmetric mean and geometric mean separately.
+  x <- runif(1e4, 0, 1e6)
+  arithmetric_mean2 <- c(arithmetric_mean2, mean(x))
+  geometric_mean2 <- c(geometric_mean2, exp(mean(log(x))))
+}
+# Plot the histogram of the difference between arithmetric mean and geometric mean.
+hist(arithmetric_mean2 - geometric_mean2, main = "difference")
+```
+
+As the above graph shows, the histogram of difference has all the values larger than 0, so we can make a conclusion that the arithmetric mean is larger than the geometric mean.
+
+# Part 3
+
+I will use simulation and analytic method to show that log(E(x)) is always larger than E[log(x)].
+
+```{r}
+set.seed(8)
+log_exp <- c()
+exp_log <- c()
+# Set a for loop to replicate the data generate process and verify if the conclusion is correct for all cases.
+for (i in 1:1e4) {
+# Generate uniform distribution random number.
+  x <- runif(1e3, 0, 1e6)
+# Calculate the values and store them into the variables.
+  log_exp <- c(log_exp, log(mean(x)))
+  exp_log <- c(exp_log, mean(log(x)))
+}
+# Plot a histogram to see the results.
+hist(log_exp - exp_log, main = "difference")
+```
+
+As the above graph shows, the histogram of difference has all the values larger than 0, so we can make a conclusion that the log(mean(x)) is larger than the mean(log(x)).
+
+Analytic method
+
+As we all know, we can get the following result through the plot:
+
+$e^{x} \geq (x+1)$
+
+```{r}
+x = seq(-3, 3, 0.02)
+y1 = exp(x)
+y2 = x + 1
+plot(x, y1, type = "l")
+lines(x, y2, type ="l")
+```
+
+Imagine a random variable y:
+
+$$
+E(e^y) = E(e^{y+E(y)-E(y)})\\
+
+       = e^{E(y)}E(e^{y-E(y)})\\
+       
+       \geq e^{E(y)}E(y-E(y)+1)\\
+       
+E(e^y)\geq e^{E(y)}\\
+
+if\quad y = lnx\\
+
+E(x)\geq e^{E(lnx)}\\
+
+Do logarithmic processing for the both sides.\\
+
+ln(E(x))\geq E(ln(x))
+
+$$
+Then, we can get the result the log(mean(x)) no less than mean(log(x)).
