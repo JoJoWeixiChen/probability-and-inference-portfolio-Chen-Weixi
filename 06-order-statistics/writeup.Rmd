@@ -1,0 +1,203 @@
+---
+title: "writeup"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Which quantiles of a continuous distribution can one estimate with more precision?
+
+The median is an important quantity in data analysis. It represents the middle value of the data distribution. Estimates of the median, however, have a degree of uncertainty because (a) the estimates are calculated from a finite sample and (b) the data distribution of the underlying data is generally unknown. One important roles of a data scientist is to quantify and to communicate the degree of uncertainty in his or her data analysis.
+
+## Question 1
+
+```{r}
+dorder <- function(x){
+  f = 100*
+      choose(200, 100)*
+      pnorm(x)^(100-1)*
+      (1-pnorm(x))^(200-100)*
+      dnorm(x)
+  return(f)
+}
+
+x1 = seq(-0.5, 0.5, 0.01)
+y1 = dorder(x1)
+plot(x = x1, y = y1)
+```
+
+## Question 2
+
+```{r}
+porder <- function(x){
+  sum = 0
+  for (i in 100:200) {
+    sum = sum + choose(200, i)*
+          pnorm(x)^i*
+          (1 - pnorm(x))^(200-i)
+  }
+  return(sum)
+}
+
+x1 = seq(-0.5, 0.5, 0.01)
+y1 = porder(x1)
+plot(x = x1, y = y1)
+```
+
+## Question 3
+
+```{r}
+qorder <- function(p){
+  f <- function(x, p){
+    sum = 0
+    for (i in 100:200) {
+      sum = sum + choose(200, i)*
+            pnorm(x)^i*
+            (1 - pnorm(x))^(200-i)
+    }
+    return(sum - p)
+  } 
+  return(uniroot(f, c(-1, 1), p = p)$root)
+}
+
+x1 = seq(0.01, 0.99, 0.01)
+y1 <- c()
+for (i in x1) {
+  y1 <- c(y1, qorder(i))
+}
+plot(x = x1, y = y1)
+```
+
+## Question 4
+
+```{r}
+set.seed(1)
+require(tgsify)
+library(tidyverse)
+
+median_sample = replicate(10000, rnorm(200, 0, 1) %>% sort %>% '['(100))
+plot(ecdf(median_sample), col = "red")
+curve(porder(x), add = TRUE)
+legend("topright", legend=c("ECDF","CDF"), col=c("red", "black"), lty=1, lwd=2)       
+```
+
+## Question 5
+
+```{r}
+hist(median_sample, freq = F)
+curve(dorder(x), add = TRUE)
+```
+
+## Question 6
+
+```{r}
+random_sample <- median_sample
+q_candidate <- qorder
+x <- c()
+for (i in 1:199) {
+  x <- c(x, q_candidate(i/200))
+}
+y <- quantile(random_sample, probs = (1:199)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x,y, asp = 1, xlab = "Theoretical quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+## Question 7
+
+```{r}
+dorder <- function(x, k){
+  f = k*
+      choose(200, k)*
+      pnorm(x)^(k-1)*
+      (1-pnorm(x))^(200-k)*
+      dnorm(x)
+  return(f)
+}
+
+
+porder <- function(x, k){
+  sum = 0
+  for (i in k:200) {
+    sum = sum + choose(200, i)* 
+                pnorm(x)^i*
+                (1 - pnorm(x))^(200-i)
+  }
+  return(sum)
+}
+
+
+qorder <- function(p, k, porder){
+  f <- function(x, p, k, porder){
+    return(porder(x, k) - p)
+  } 
+  return(uniroot(f, c(-1, 100), p = p, k = k, porder = porder)$root)
+}
+```
+
+## Question 8
+
+```{r}
+set.seed(2)
+large_sample = replicate(10000, rnorm(200, 0, 1) %>% sort %>% '['(200))
+random_sample <- large_sample
+q_candidate <- qorder
+x <- c()
+for (i in 1:199) {
+  x <- c(x, q_candidate(p = i/200, k = 200, porder))
+}
+y <- quantile(random_sample, probs = (1:199)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x,y, asp = 1, xlab = "Theoretical quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+## Question 9
+
+```{r}
+dorder <- function(x, k, n, dist, ...){
+  f1 <- eval(parse(text = "p" %|% dist))
+  f2 <- eval(parse(text = "d" %|% dist))
+  f = k*
+      choose(n, k)*
+      f1(x)^(k-1)*
+      (1-f1(x))^(n-k)*
+      f2(x)
+  return(f)
+}
+
+
+porder <- function(x, k, n, dist, ...){
+  f1 <- eval(parse(text = "p" %|% dist))
+  sum = 0
+  for (i in k:n) {
+    sum = sum + choose(n, i)* 
+                f1(x)^i*
+                (1 - f1(x))^(n-i)
+  }
+  return(sum)
+}
+
+
+qorder <- function(p, k, n, dist, ...){
+  f <- function(x, p, k, n, dist, porder, ...){
+    return(porder(x, k, n, dist, ...) - p)
+  } 
+  return(uniroot(f, c(-100, 100), p = p, k = k, n = n, dist = dist, porder = porder, ... = ...)$root)
+}
+```
+
+## Question 10
+
+```{r}
+set.seed(3)
+min_sample = replicate(10000, rnorm(200, 0, 1) %>% sort %>% '['(1))
+plot(ecdf(min_sample), col = "red")
+curve(porder(x, 1, 200, dist = "norm"), add = TRUE)
+legend("topright", legend=c("ECDF","CDF"), col=c("red", "black"), lty=1, lwd=2)   
+
+hist(min_sample, freq = F)
+curve(dorder(x, 1, 200, dist = "norm"), add = TRUE)
+```
