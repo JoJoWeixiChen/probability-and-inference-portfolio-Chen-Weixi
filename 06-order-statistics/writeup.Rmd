@@ -11,7 +11,10 @@ The median is an important quantity in data analysis. It represents the middle v
 
 ## Question 1
 
+Begin with the median from a sample of N = 200 from the standard normal distribution. Write an R function that is the density function for the median in this sample. Note that the 100th order statistic is approximately the median, and use the order statistic formula discussed in class. Generate a plot of the function.
+
 ```{r}
+# Define the function "dorder"
 dorder <- function(x){
   f = 100*
       choose(200, 100)*
@@ -20,15 +23,20 @@ dorder <- function(x){
       dnorm(x)
   return(f)
 }
-
+# Plot the dorder function.
 x1 = seq(-0.5, 0.5, 0.01)
 y1 = dorder(x1)
-plot(x = x1, y = y1)
+plot(x = x1, y = y1, type = "l", main = "Density of the median in this sample", xlab = "x", ylab = "Density")
 ```
+
+From the graph above, we can see that the density function of the median in this sample is symmetrical and the mean seems to be 0. That's because that when we have more and more samples, the median of the sample from the normal distribution gets closer and closer to its true value, 0.
 
 ## Question 2
 
+Write an R function that is the probability function for the median in this sample. Use the order statistic formula discussed in class. Generate a plot of the function.
+
 ```{r}
+# Define the function "porder"
 porder <- function(x){
   sum = 0
   for (i in 100:200) {
@@ -39,14 +47,20 @@ porder <- function(x){
   return(sum)
 }
 
+# Plot the probability function
 x1 = seq(-0.5, 0.5, 0.01)
 y1 = porder(x1)
-plot(x = x1, y = y1)
+plot(x = x1, y = y1, type = "l", main = "Probability function of the median in this sample", xlab = "x", ylab = "Probability")
 ```
+
+From the graph above, we can see that the probability function is mainly located in the range of (-0.5,0.5). And the probability function increases fast when x is around 0. This makes sense because that as we see in the first graph, the value of density function is large when x is around 0.
 
 ## Question 3
 
+Write an R function that is the quantile function for the median in this sample. (You have several options for how to write this function.) Generate a plot of the function.
+
 ```{r}
+# Define the function qorder
 qorder <- function(p){
   f <- function(x, p){
     sum = 0
@@ -57,40 +71,60 @@ qorder <- function(p){
     }
     return(sum - p)
   } 
+# Use the function "uniroot" to calculate the optimal value of x which meets porder(x) = p
   return(uniroot(f, c(-1, 1), p = p)$root)
 }
 
+# Plot the quantile function for the median
 x1 = seq(0.01, 0.99, 0.01)
 y1 <- c()
 for (i in x1) {
   y1 <- c(y1, qorder(i))
 }
-plot(x = x1, y = y1)
+plot(x = x1, y = y1, type = "l", main = "Quantile function of the median in this sample", xlab = "quantile", ylab = "value")
 ```
+
+From the graph above, we can see that the mean part of the quantile function is among (-0.2,0.2), which makes sense because that the quantile function is the inverse function of probability function. So the shape of these two function should be the same, just making an inverse of the axis.
 
 ## Question 4
 
+Simulate the sampling distribution for the median. Create a plot of the empirical CDF (ECDF). Overlay the plot of the ECDF with a plot of the CDF.
+
 ```{r}
+# Set the random seed and import the packages I want to use
 set.seed(1)
 require(tgsify)
 library(tidyverse)
 
+# Simulate groups of random numbers in normal distribution and filter the median.
 median_sample = replicate(10000, rnorm(200, 0, 1) %>% sort %>% '['(100))
-plot(ecdf(median_sample), col = "red")
+# Plot the ecdf and cdf of the median in the sample
+plot(ecdf(median_sample), col = "red", main = "ECDF and CDF of the median in this sample", xlab = "x", ylab = "probability")
 curve(porder(x), add = TRUE)
 legend("topright", legend=c("ECDF","CDF"), col=c("red", "black"), lty=1, lwd=2)       
 ```
 
+From the graph above, we can see that the two lines are quite similar with each other. So we can say that the porder function created is the right function, as the line is similar as the empirical CDF.
+
 ## Question 5
 
+Using the simulated sampling distribution from the previous question, create a histogram (on the density scale). Overlay the histogram with a plot of the density function.
+
 ```{r}
-hist(median_sample, freq = F)
+hist(median_sample, freq = F, main = "Histogram of the median sample")
 curve(dorder(x), add = TRUE)
 ```
 
+From the graph above, we can see that the density function could describe the trends of the histogram greatly. So we can say that the density function is the right function we need. 
+
 ## Question 6
 
+One very common way to compare a random sample to a theoretical candidate distribution is the QQ plot. It is created by ploting quantiles of the theoretical distribution on the x-axis and empirical quantiles from the sample on the y-axis.
+
+If sample and theoretical quantiles come from the same distribution, then the plotted points will fall along the line y = x, approximately. Here are two examples when the sample and theoretical quantiles came from the same distribution.
+
 ```{r}
+# Create the random sample and the qorder data.
 random_sample <- median_sample
 q_candidate <- qorder
 x <- c()
@@ -99,14 +133,21 @@ for (i in 1:199) {
 }
 y <- quantile(random_sample, probs = (1:199)/200)
 
+# Make a QQ plot to compare the quantile of the random sample and the qorder data
 tgsify::plotstyle(style = upright)
-plot(x,y, asp = 1, xlab = "Theoretical quantile", ylab = "Sample quantile")
+plot(x,y, asp = 1, main = "QQ plot of the sample median and theoretical median quantile", xlab = "Theoretical quantile", ylab = "Sample quantile")
 abline(0,1)
 ```
 
+
+From the graph above, we can see that the QQ plot is almost on the line of "y = x", which means that the quantile of the random sample is almost the same as the qorder function. So we can know that the qorder function we created perfectly describes the trend of the quantile of the median in the sample. We can view the qorder as the theoretical candidate function of the quantile of the median in the sample.
+
 ## Question 7
 
+Modify the dorder, porder, and qorder functions so that the functions take a new parameter k (for the kt**h order statistic) so that the functions will work for any order statistic and not just the median.
+
 ```{r}
+# Add the parameter k to the function dorder.
 dorder <- function(x, k){
   f = k*
       choose(200, k)*
@@ -117,6 +158,7 @@ dorder <- function(x, k){
 }
 
 
+# Add the parameter k to the function porder
 porder <- function(x, k){
   sum = 0
   for (i in k:200) {
@@ -128,6 +170,7 @@ porder <- function(x, k){
 }
 
 
+# Add the parameter k to the function qorder
 qorder <- function(p, k, porder){
   f <- function(x, p, k, porder){
     return(porder(x, k) - p)
@@ -138,25 +181,34 @@ qorder <- function(p, k, porder){
 
 ## Question 8
 
+Generate the QQ plot for simulated data from the sampling distribution of the sample max and the theoretical largest order statistic distribution.
+
 ```{r}
+# Generate the sample data and collect the sample max value.
 set.seed(2)
 large_sample = replicate(10000, rnorm(200, 0, 1) %>% sort %>% '['(200))
 random_sample <- large_sample
 q_candidate <- qorder
+# Generate the theoretical largest order statistic
 x <- c()
 for (i in 1:199) {
   x <- c(x, q_candidate(p = i/200, k = 200, porder))
 }
 y <- quantile(random_sample, probs = (1:199)/200)
-
+# Plot the graph of QQ plot
 tgsify::plotstyle(style = upright)
-plot(x,y, asp = 1, xlab = "Theoretical quantile", ylab = "Sample quantile")
+plot(x,y, asp = 1, main = "QQ plot of the sample max and the theoretical largest order statistic", xlab = "Theoretical quantile", ylab = "Sample quantile")
 abline(0,1)
 ```
 
+From the graph above, we can see that the dots are almost all on the line of "y = x", which shows that the sample max has a similar distribution with the theoretical largest order statistic we generated. So we can say that the qorder function including the parameter k we created is right.
+
 ## Question 9
 
+Modify the dorder, porder, and qorder functions so that the functions take new parameters dist and ... so that the functions will work for any continuous distribution that has d and p functions defined in R.
+
 ```{r}
+# Add parameters to modify the function dorder
 dorder <- function(x, k, n, dist, ...){
   f1 <- eval(parse(text = "p" %|% dist))
   f2 <- eval(parse(text = "d" %|% dist))
@@ -169,6 +221,7 @@ dorder <- function(x, k, n, dist, ...){
 }
 
 
+# Add parameters to modify the function porder
 porder <- function(x, k, n, dist, ...){
   f1 <- eval(parse(text = "p" %|% dist))
   sum = 0
@@ -181,6 +234,7 @@ porder <- function(x, k, n, dist, ...){
 }
 
 
+# Add parameters to modify the function qorder
 qorder <- function(p, k, n, dist, ...){
   f <- function(x, p, k, n, dist, porder, ...){
     return(porder(x, k, n, dist, ...) - p)
@@ -191,13 +245,11 @@ qorder <- function(p, k, n, dist, ...){
 
 ## Question 10
 
-```{r}
-set.seed(3)
-min_sample = replicate(10000, rnorm(200, 0, 1) %>% sort %>% '['(1))
-plot(ecdf(min_sample), col = "red")
-curve(porder(x, 1, 200, dist = "norm"), add = TRUE)
-legend("topright", legend=c("ECDF","CDF"), col=c("red", "black"), lty=1, lwd=2)   
+Use the newly modified functions to plot the probability and density functions for the sample min (N = 200).
 
-hist(min_sample, freq = F)
-curve(dorder(x, 1, 200, dist = "norm"), add = TRUE)
+```{r}
+curve(dorder(x, 1, 200, "norm"), xlim = c(-5, -1), ylab = "Density", main = "Density function of the sample min (N = 200)")
+curve(porder(x, 1, 200, "norm"), xlim = c(-5, -1), ylab = "Probability", main = "Probability function of the sample min (N = 200)")
 ```
+
+From the graph above, we can see that the density function of the sample min is symmetrical and the mean seems to be -2.8, which we can also know by noticing that the probability function has the largest growth rate at around -2.8. So, we can know that the sample min (N = 200) has a mean of around -2.8.
