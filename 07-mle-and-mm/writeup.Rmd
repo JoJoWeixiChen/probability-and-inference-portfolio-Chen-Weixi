@@ -1,0 +1,863 @@
+---
+title: "writeup"
+output:
+  html_document:
+    df_print: paged
+---
+
+# 07-mle-and-mm
+
+Maximum likelihood (MLE) and method of moments (MM) are two common methods for constructing a model. For this assignment, we are going to model the unknown distributions with maximum likelihood and method of moments.
+
+## Data and preparation
+
+```{r}
+library(tidyverse)
+require(dplyr)
+library(stats4)
+Hmisc::getHdata(nhgh)
+d1 <- nhgh %>% 
+  filter(sex == "female") %>% 
+  filter(age >= 18) %>% 
+  select(gh, ht) %>% 
+  filter(1:n()<=1000)
+```
+
+## Glycohemoglobin (MLE)
+
+### Normal distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the normal distribution, and we plan to calculate the parameters first. 
+
+```{r}
+gh <- d1$gh
+fun <- function(a, b)
+  sum(-log(dnorm(gh, a, b)))
+z <- mle(minuslogl = fun, start = list(a = 6, b = 1))
+a <- coef(z)[1]
+b <- coef(z)[2]
+a
+b
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(gh, breaks = 20, freq = FALSE)
+curve(dnorm(x, a, b), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(gh), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pnorm(x, a, b), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- gh
+q_candidate <- qnorm
+
+x <- q_candidate((1:200)/200, a, b)
+y <- quantile(gh, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qnorm(0.5, a, b)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rnorm(1e4, a, b)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Gamma distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Gamma distribution, and we plan to calculate the parameters first. 
+
+```{r}
+gh <- d1$gh
+fun <- function(a, b)
+  sum(-log(dgamma(gh, a, b)))
+z <- mle(minuslogl = fun, start = list(a = 40, b = 7))
+a <- coef(z)[1]
+b <- coef(z)[2]
+a
+b
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(gh, breaks = 20, freq = FALSE)
+curve(dgamma(x, a, b), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(gh), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pgamma(x, a, b), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- gh
+q_candidate <- qgamma
+
+x <- q_candidate((1:200)/200, a, b)
+y <- quantile(gh, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qgamma(0.5, a, b)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rgamma(1e4, a, b)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Weibull distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Weibull distribution, and we plan to calculate the parameters first. 
+
+```{r}
+gh <- d1$gh
+fun <- function(a, b)
+  sum(-log(dweibull(gh, a, b)))
+z <- mle(minuslogl = fun, start = list(a = 4, b = 6))
+a <- coef(z)[1]
+b <- coef(z)[2]
+a
+b
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(gh, breaks = 20, freq = FALSE)
+curve(dweibull(x, a, b), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(gh), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pweibull(x, a, b), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- gh
+q_candidate <- qweibull
+
+x <- q_candidate((1:200)/200, a, b)
+y <- quantile(gh, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x,y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qweibull(0.5, a, b)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rweibull(1e4, a, b)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+## Glycohemoglobin (MM)
+
+### Normal distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the normal distribution, and we plan to calculate the parameters first. 
+
+```{r}
+gh <- d1$gh
+xb <- mean(gh)
+s2 <- var(gh)
+mu <- xb
+sigma <- sqrt(s2)
+mu
+sigma
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(gh, breaks = 20, freq = FALSE)
+curve(dnorm(x, mu, sigma), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(gh), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pnorm(x, mu, sigma), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- gh
+q_candidate <- qnorm
+
+x <- q_candidate((1:200)/200, mu, sigma)
+y <- quantile(gh, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qnorm(0.5, mu, sigma)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rnorm(1e4, mu, sigma)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Gamma distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Gamma distribution, and we plan to calculate the parameters first. 
+
+```{r}
+gh <- d1$gh
+xb <- mean(gh)
+s2 <- var(gh)
+lh <- xb/s2
+ch <- xb^2/s2
+lh
+ch
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(gh, breaks = 20, freq = FALSE)
+curve(dgamma(x, ch, lh), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(gh), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pgamma(x, ch, lh), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- gh
+q_candidate <- qgamma
+
+x <- q_candidate((1:200)/200, ch, lh)
+y <- quantile(gh, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qgamma(0.5, ch, lh)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rgamma(1e4, ch, lh)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Weibull distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Weibull distribution, and we plan to calculate the parameters first. 
+
+```{r}
+gh <- d1$gh
+xb <- mean(gh)
+s2 <- var(gh)
+cv2 = s2/xb^2
+fun <- function(beta, cv2){
+  gamma(1 + 2/beta)/(gamma(1 + 1/beta))^2 - (1 + cv2)
+}
+k = optimize(fun, interval = c(0, 5), cv2 = cv2, maximum = FALSE)$minimum
+lambda = xb/gamma(1 + 1/k)
+k
+lambda
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(gh, breaks = 20, freq = FALSE)
+curve(dweibull(x, k, lambda), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(gh), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pweibull(x, k, lambda), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- gh
+q_candidate <- qweibull
+
+x <- q_candidate((1:200)/200, k, lambda)
+y <- quantile(gh, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x,y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qweibull(0.5, k, lambda)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rweibull(1e4, k, lambda)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+## Height of adult females (MLE)
+
+### Normal distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the normal distribution, and we plan to calculate the parameters first. 
+
+```{r}
+ht <- d1$ht
+fun <- function(a, b)
+  sum(-log(dnorm(ht, a, b)))
+z <- mle(minuslogl = fun, start = list(a = 160, b = 10))
+a <- coef(z)[1]
+b <- coef(z)[2]
+a
+b
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(ht, breaks = 20, freq = FALSE)
+curve(dnorm(x, a, b), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(ht), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pnorm(x, a, b), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- ht
+q_candidate <- qnorm
+
+x <- q_candidate((1:200)/200, a, b)
+y <- quantile(ht, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qnorm(0.5, a, b)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rnorm(1e4, a, b)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Gamma distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Gamma distribution, and we plan to calculate the parameters first. 
+
+```{r}
+ht <- d1$ht
+fun <- function(a, b)
+  sum(-log(dgamma(ht, a, b)))
+z <- mle(minuslogl = fun, start = list(a = 450, b = 2))
+a <- coef(z)[1]
+b <- coef(z)[2]
+a
+b
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(ht, breaks = 20, freq = FALSE)
+curve(dgamma(x, a, b), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(ht), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pgamma(x, a, b), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- ht
+q_candidate <- qgamma
+
+x <- q_candidate((1:200)/200, a, b)
+y <- quantile(ht, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qgamma(0.5, a, b)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rgamma(1e4, a, b)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Weibull distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Weibull distribution, and we plan to calculate the parameters first. 
+
+```{r}
+ht <- d1$ht
+fun <- function(a, b)
+  sum(-log(dweibull(ht, a, b)))
+z <- mle(minuslogl = fun, start = list(a = 20, b = 160))
+a <- coef(z)[1]
+b <- coef(z)[2]
+a
+b
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(ht, breaks = 20, freq = FALSE)
+curve(dweibull(x, a, b), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(ht), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pweibull(x, a, b), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- ht
+q_candidate <- qweibull
+
+x <- q_candidate((1:200)/200, a, b)
+y <- quantile(ht, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x,y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qweibull(0.5, a, b)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rweibull(1e4, a, b)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+## Glycohemoglobin (MM)
+
+### Normal distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the normal distribution, and we plan to calculate the parameters first. 
+
+```{r}
+ht <- d1$ht
+xb <- mean(ht)
+s2 <- var(ht)
+mu <- xb
+sigma <- sqrt(s2)
+mu
+sigma
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(ht, breaks = 20, freq = FALSE)
+curve(dnorm(x, mu, sigma), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(ht), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pnorm(x, mu, sigma), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- ht
+q_candidate <- qnorm
+
+x <- q_candidate((1:200)/200, mu, sigma)
+y <- quantile(ht, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qnorm(0.5, mu, sigma)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rnorm(1e4, mu, sigma)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Gamma distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Gamma distribution, and we plan to calculate the parameters first. 
+
+```{r}
+ht <- d1$ht
+xb <- mean(ht)
+s2 <- var(ht)
+lh <- xb/s2
+ch <- xb^2/s2
+lh
+ch
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(ht, breaks = 20, freq = FALSE)
+curve(dgamma(x, ch, lh), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(ht), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pgamma(x, ch, lh), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- ht
+q_candidate <- qgamma
+
+x <- q_candidate((1:200)/200, ch, lh)
+y <- quantile(ht, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x, y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qgamma(0.5, ch, lh)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rgamma(1e4, ch, lh)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
+### Weibull distribution
+
+In this part, we assume that the Glycohemoglobin data is sampled from the Weibull distribution, and we plan to calculate the parameters first. 
+
+```{r}
+ht <- d1$ht
+xb <- mean(ht)
+s2 <- var(ht)
+cv2 = s2/xb^2
+fun <- function(beta, cv2){
+  gamma(1 + 2/beta)/(gamma(1 + 1/beta))^2 - (1 + cv2)
+}
+k = optimize(fun, interval = c(0, 100), cv2 = cv2, maximum = FALSE)$minimum
+lambda = xb/gamma(1 + 1/k)
+k
+lambda
+```
+
+Then, we are going to overlay the estimated pdf onto histogram.
+
+```{r}
+hist(ht, breaks = 20, freq = FALSE)
+curve(dweibull(x, k, lambda), add = TRUE)
+```
+
+Overlay the estimated cdf onto the ecdf
+
+```{r}
+plot(ecdf(ht), cex = 0.1, col = "red", main = "", ylab = "Density")
+curve(pweibull(x, k, lambda), add = TRUE)
+legend('bottomright', legend = c("estimated cdf", "ecdf"), col = c("black", "red"), lty = 1, lwd = 2)
+```
+
+QQ plot
+
+```{r}
+random_sample <- ht
+q_candidate <- qweibull
+
+x <- q_candidate((1:200)/200, k, lambda)
+y <- quantile(ht, probs = (1:200)/200)
+
+tgsify::plotstyle(style = upright)
+plot(x,y, asp = 1, xlab = "Estimated quantile", ylab = "Sample quantile")
+abline(0,1)
+```
+
+Estimated median
+
+```{r}
+qweibull(0.5, k, lambda)
+```
+
+Median sampling distribution
+
+```{r}
+median <- c()
+for (i in 1:1e5) {
+  data <- rweibull(1e4, k, lambda)
+  median <- c(median, median(data))
+}
+
+hist(median, breaks = 20, freq = FALSE)
+```
+
+Range of middle 95% of sampling distribution
+
+```{r}
+range = quantile(median, c(0.025, 0.975))
+range[2] - range[1]
+```
+
