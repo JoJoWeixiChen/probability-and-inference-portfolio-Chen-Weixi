@@ -11,7 +11,7 @@ Maximum likelihood (MLE) and method of moments (MM) are two common methods for c
 
 ## Data and preparation
 
-```{r}
+```{r message=FALSE}
 library(tidyverse)
 require(dplyr)
 library(stats4)
@@ -380,9 +380,9 @@ xb <- mean(gh)
 s2 <- var(gh)
 cv2 = s2/xb^2
 fun <- function(beta, cv2){
-  gamma(1 + 2/beta)/(gamma(1 + 1/beta))^2 - (1 + cv2)
+  abs(gamma(1 + 2/beta)/(gamma(1 + 1/beta))^2 - (1 + cv2))
 }
-k = optimize(fun, interval = c(0, 5), cv2 = cv2, maximum = FALSE)$minimum
+k = optimize(fun, interval = c(0, 100), cv2 = cv2, maximum = FALSE)$minimum
 lambda = xb/gamma(1 + 1/k)
 k
 lambda
@@ -799,7 +799,7 @@ xb <- mean(ht)
 s2 <- var(ht)
 cv2 = s2/xb^2
 fun <- function(beta, cv2){
-  gamma(1 + 2/beta)/(gamma(1 + 1/beta))^2 - (1 + cv2)
+  abs(gamma(1 + 2/beta)/(gamma(1 + 1/beta))^2 - (1 + cv2))
 }
 k = optimize(fun, interval = c(0, 100), cv2 = cv2, maximum = FALSE)$minimum
 lambda = xb/gamma(1 + 1/k)
