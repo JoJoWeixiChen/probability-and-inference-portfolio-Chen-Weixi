@@ -654,17 +654,17 @@ set.seed(12)
 data <- bwt %>% filter(smoke == 1) %>% pull(bwt)
 mean_value <- c()
 for (i in 1:1e3) {
-  sample_data <- sample(data, size = 1e3, replace = TRUE)
+  sample_data <- sample(data, size = length(data), replace = TRUE)
   mean_value <- c(mean_value, mean(sample_data))
 }
 quantile(mean_value, c(0.025, 0.975))
 ```
 
     ##     2.5%    97.5% 
-    ## 2732.709 2809.778
+    ## 2625.700 2918.708
 
 ``` r
-# The 95% CI for the mean birthweight of infants whose mothers did smoke during pregnancy using the bootstrap method is [2732.709, 2809.778 ].
+# The 95% CI for the mean birthweight of infants whose mothers did smoke during pregnancy using the bootstrap method is [2625.700, 2918.708].
 ```
 
 **B.** Generate a 95% confidence interval for the mean birthweight of
@@ -702,18 +702,18 @@ data <- bwt %>% filter(smoke == 1) %>% pull(bwt)
 data1 <- bwt %>% filter(smoke == 0) %>% pull(bwt)
 proportions <- c()
 for (i in 1:1e3) {
-  mu_s <- mean(sample(data, 1e3, replace = TRUE))
-  mu_ns <- mean(sample(data1, 1e3, replace = TRUE))
+  mu_s <- mean(sample(data, length(data), replace = TRUE))
+  mu_ns <- mean(sample(data1, length(data), replace = TRUE))
   proportions <- c(proportions, mu_s/mu_ns)
 }
 quantile(proportions, c(0.025, 0.975))
 ```
 
     ##      2.5%     97.5% 
-    ## 0.8881938 0.9276662
+    ## 0.8378101 0.9810527
 
 ``` r
-# The 95% CI is [0.8881938, 0.9276662 ].
+# The 95% CI is [0.8378101, 0.9810527].
 ```
 
 # 9. Inference
