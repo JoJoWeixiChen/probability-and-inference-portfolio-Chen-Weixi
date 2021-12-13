@@ -1,6 +1,6 @@
 ---
 title: "Final Exam"
-output: html_document
+output: github_document
 ---
 
 # Instructions
@@ -71,10 +71,12 @@ set.seed(1)
 result1 <- replicate(1e3, game(N = 4)[1]) 
 probability1 <- result1 %>% table() %>% prop.table() %>% as.data.frame() %>% .[2,2]
 probability1
+# The probability for strategy1 results in a goat is 0.759
 
 result2 <- replicate(1e3, game(N = 4)[2]) 
 probability2 <- result2 %>% table() %>% prop.table() %>% as.data.frame() %>% .[2,2]
 probability2
+# The probability for strategy2 results in a goat is 0.634
 ```
 
 **B**. Communicate the precision of your simulated probability in part **C** by calculating a **99\%** confidence interval.
@@ -82,11 +84,13 @@ probability2
 Strategy1
 ```{r}
 prop.test(probability1*1e3, 1e3, probability1, alternative = "two.sided", conf.level = 0.99)
+# The 99% confidence interval for the probability of strategy1 is [0.7225285, 0.7920573]
 ```
 
 strategy2
 ```{r}
 prop.test(probability2*1e3, 1e3, probability2, alternative = "two.sided", conf.level = 0.99)
+# The 99% confidence interval for the probability of strategy2 is [0.5939988, 0.6722348]
 ```
 
 **A**. Let D(N) be the difference between the difference in probabilities between strategy 2 and strategy 1.
@@ -106,7 +110,7 @@ probability2 <- replicate(1e3, game(N = i)[2]) %>% table() %>% prop.table() %>% 
 D = probability2 - probability1
 y <- c(y, D)
 }
-plot(x, y, xlab = "number of doors", ylab = "difference in probabilities", type = "b")
+plot(x, y, main = "Relationship between number of doors and difference in probabilities", xlab = "number of doors", ylab = "difference in probabilities", type = "b")
 ```
 The plot makes sense. When you choose the strategy1, the probability of winning the game is $\frac{1}{N}$. When you choose strategy2, the probability of winning the game is $\frac{N-1}{N(N-2)}$. As the increasing of N, the difference between (N-1) and (N-2) getting smaller, and the difference between the two probabilities getting smaller.
 
@@ -167,7 +171,7 @@ prob_tp_dn <- 1 - prob_tn_dn
 prob_tpdn <- prob_tp_dn * prob_dn
 prob_tp <- prob_tpdn + prob_dptp
 ppv <- prob_dptp/prob_tp
-plot(prevalence, ppv, xlab = "Prevalence", ylab = "PPV")
+plot(prevalence, ppv, main = "Relationship betweenPrevalence and PPV", xlab = "Prevalence", ylab = "PPV")
 ```
 
 # 3. Discrete Distributions
@@ -189,6 +193,7 @@ hospital_charges <- function(N){
 ```{r}
 set.seed(3)
 quantile(hospital_charges(1000), probs = 0.9)
+# The 90th percentile for yearly hospital charges for a randomly selected Vanderbilt student is 5.534398 
 ```
 
 **B**.  Consider the **class** average yearly hospital charge for the students in a class of size 30.  Plot the density function or a simulated histogram of the class average yearly hospital charge.
@@ -199,8 +204,8 @@ class <- c()
 for (i in 1:1e3) {
   class <- c(class, mean(hospital_charges(30)))
 }
-plot(density(class), main = "average yearly hospital charge of a class")
-hist(class, main = "average yearly hospital charge of a class")
+plot(density(class), main = "The density of average yearly hospital charge of a class", xlab = "average yearly hospital charges")
+hist(class, main = "The histogram of average yearly hospital charge of a class", xlab = "average yearly hospital charges")
 ```
 
 **A**.  What is the probability that a randomly selected class of size 30 students will have less than 10 students with zero yearly hospital charges?
@@ -215,15 +220,17 @@ for(i in 1:1e3){
   }
 }
 rate/1e3
+# The simulated probability that a randomly selected class of size 30 students will have less than 10 students with zero yearly hospital charges is 0.023
 ```
 
 # 4. Continuous Distributions
 
-**C.** Suppose diastolic blood pressure (DBP) follows a normal distribution with mean 80 mmHg and SD 15 mmHg. What is the probability that a randomly sampled personâ€™s DBP lies between 70 and 104 mmHg?
+**C.** Suppose diastolic blood pressure (DBP) follows a normal distribution with mean 80 mmHg and SD 15 mmHg. What is the probability that a randomly sampled person's DBP lies between 70 and 104 mmHg?
 
 ```{r}
 prob = pnorm(104, mean = 80, sd = 15) - pnorm(70, mean = 80, sd = 15)
 prob
+# The probability that a randomly sampled person's DBP lies between 70 and 104 mmHg is 0.6927082.
 ```
 
 **B.** Suppose a human femur was discovered that is 37 cm long.  Also suppose that using the NHANES data, researchers believe the distribution of femur bones, by sex, are distributed as follows:
@@ -239,6 +246,7 @@ prob_male = dnorm(37, 40, sqrt(3.4))
 prob_female = dnorm(37, 36, sqrt(3.3))
 prob_from_male = prob_male/(prob_male + prob_female)
 prob_from_male
+# The probability that the discovered femur was from a male is 0.2338065.
 ```
 
 **A.**  Continuing part **B**, generate a plot of P(femur from male | femur length = x).  Let femur length range from 25 to 50.
@@ -273,21 +281,40 @@ hospital_charges <- function(N){
 
 ```{r}
 set.seed(8)
-mean(hospital_charges(1e4))
+mean_charge <- c()
+for (i in 1:1e3) {
+  mean_charge <- c(mean_charge, mean(hospital_charges(1e4)))
+}
+mean(mean_charge)
+# The simulated expectation of yearly hospital charges is 2.000392.
 ```
 
 **B.** Suppose Vanderbilt implements a cap of \$10,000 on yearly student hospital charges.  What is the mean yearly hospital charge under the new policy?
 
 ```{r}
-charge_fee <- hospital_charges(1e4)
-charge_fee[charge_fee >= 10] <- 10
-mean(charge_fee)
+set.seed(88)
+mean_charge_new <- c()
+for (i in 1:1e3) {
+  charge_fee <- hospital_charges(1e4)
+  charge_fee[charge_fee >= 10] <- 10
+  mean_charge_new <- c(mean_charge_new, mean(charge_fee))
+}
+mean(mean_charge_new)
+# The simulated expectation of yearly hospital charge under the new policy is 1.953968.
 ```
 
 **A.** What is the variance of yearly hospital charge under the new policy?
 
 ```{r}
-var(charge_fee)
+set.seed(888)
+var_charge_new <- c()
+for (i in 1:1e3) {
+  charge_fee <- hospital_charges(1e4)
+  charge_fee[charge_fee >= 10] <- 10
+  var_charge_new <- c(var_charge_new, var(charge_fee))
+}
+mean(var_charge_new)
+# The variance of yearly hospital charge under the new policy is 7.024844.
 ```
 
 # 6. Transformations & Sampling Distributions
@@ -304,8 +331,8 @@ data <- c()
 for (i in 1:1e3) {
   data <- c(data, median(rlnorm(101)))
 }
-plot(density(data), main = "density curve for the sampling distribution of the median")
-hist(data, main = "histogram for the sampling distribution of the median")
+plot(density(data), main = "Density curve for the sampling distribution of the median")
+hist(data, main = "Histogram for the sampling distribution of the median")
 ```
 
 **B.** Below is the CDF function for the kth order statistic when the underlying distribution is log normal with $\mu$ = 0 and $\sigma$ = 1.  Create a plot of the ECDF of the simulated sampling distribution generated in **C** and overlay the CDF using the function below.
@@ -314,7 +341,7 @@ hist(data, main = "histogram for the sampling distribution of the median")
 Fk <- function(x,k,n){
   pbinom(k-1, n, plnorm(x), lower.tail = FALSE)
 }
-plot(ecdf(data), main = "ecdf and cdf of the median", ylab = "probability")
+plot(ecdf(data), main = "Ecdf and cdf of the median", ylab = "probability")
 curve(Fk(x, 51, 101), add = TRUE, col = "red")
 legend("bottomright", legend = c("cdf", "ecdf"), lty = 1, col = c("red", "black"))
 ```
@@ -335,9 +362,11 @@ for (i in 1:1e3) {
 quantile(quantile1, c(0.025, 0.975))
 quantile(quantile2, c(0.025, 0.975))
 quantile(quantile3, c(0.025, 0.975))
-plot(density(quantile1), xlim = c(0.3, 2.6))
-lines(density(quantile2))
-lines(density(quantile3))
+plot(density(quantile1), xlim = c(0.3, 2.6), main = "The sampling distribution of three quantiles", xlab = "x")
+lines(density(quantile2), col = "red")
+lines(density(quantile3), col = "green")
+legend("topright", legend = c("25th quantile", "50th quantile", "75th quantile"), lty = 1, col = c("black", "red", "green"))
+# From the plot and confidence intervals we got, we can get that the 25th quantile has the tightest 95% CI.
 ```
 
 # 7. Estimation of CDF and PDF from data
@@ -355,7 +384,7 @@ d1 <- nhgh[1:500,]
 data <- d1 %>% filter(age > 18 & sex == "male") %>% pull(ht)
 mu1 = mean(data)
 sd1 = sd(data)
-curve(dnorm(x, mean = mu1, sd = sd1), xlim = c(150, 200), main = "the estimated density of standing height for adult (age>18) males", xlab = "standing height", ylab = "density")
+curve(dnorm(x, mean = mu1, sd = sd1), xlim = c(150, 200), main = "The estimated density of standing height for adult (age>18) males", xlab = "standing height", ylab = "density")
 ```
 
 **B.** Estimate the distribution of BMI for adult (age > 18) females using using the method of moment method with the gamma distribution. Create a plot of the estimated density function.
@@ -366,14 +395,14 @@ mu2 <- mean(data2)
 s2 <- var(data2)
 shape1 <- mu2^2/s2
 scale1 <- s2/mu2
-curve(dgamma(x, shape = shape1, scale = scale1), xlim = c(0, 80), main = "the estimated density of BMI for adult (age>18) females", xlab = "BMI", ylab = "Density")
+curve(dgamma(x, shape = shape1, scale = scale1), xlim = c(0, 80), main = "The estimated density of BMI for adult (age>18) females", xlab = "BMI", ylab = "Density")
 ```
 
 **A.** Estimate the distribution of creatinine (SCr) for adults (age > 18) using the kernel density method with a Gaussian kernel.  Create a plot of the estimated density function.
 
 ```{r}
 data3 <- d1 %>% filter(age > 18 & !is.na(SCr)) %>% pull(SCr)
-plot(density(data3, adjust = 2, kernel = "gaussian"), main = "the estimated density of SCr for adults", xlab = "SCr")
+plot(density(data3, adjust = 2, kernel = "gaussian"), main = "The estimated density of SCr for adults", xlab = "SCr")
 ```
 
 # 8. Sample from an estimated distribution
@@ -395,6 +424,7 @@ for (i in 1:1e3) {
   mean_value <- c(mean_value, mean(sample_data))
 }
 quantile(mean_value, c(0.025, 0.975))
+# The 95% CI for the mean birthweight of infants whose mothers did smoke during pregnancy using the bootstrap method is [2732.709, 2809.778 ].
 ```
 
 **B.** Generate a 95% confidence interval for the mean birthweight of infants whose mothers **did** smoke during pregnancy using the Central Limit Theorem shortcut.
@@ -406,6 +436,7 @@ bottom = mu - 1.96*(sd/sqrt(length(data)))
 top = mu + 1.96*(sd/sqrt(length(data)))
 bottom
 top
+# The 95% CI for the mean birthweight of infants whose mothers did smoke during pregnancy using the Central Limit Theorem shortcut is [2621.624, 2922.214].
 ```
 
 **A.** Let $\mu_s$ be the mean birthweight of infants whose mothers smoked during pregnancy.  Let $\mu_{ns}$ be the mean for the non-smoking group.  Use simulation to calculate the 95% confidence interval for $\mu_s/\mu_{ns}$.
@@ -421,6 +452,7 @@ for (i in 1:1e3) {
   proportions <- c(proportions, mu_s/mu_ns)
 }
 quantile(proportions, c(0.025, 0.975))
+# The 95% CI is [0.8881938, 0.9276662 ].
 ```
 
 # 9.  Inference
@@ -442,12 +474,14 @@ study1
 ```{r}
 result1 <- prop.test(x = c(30, 35), n = c(100, 100))
 result1
+# The p-value is 0.5459. At the confidence level of 95%, we can conclude that there is no conclusive difference between the rates of mild complication after hernia repair using open and laparoscopic surgical approaches, in another word, the risk is the same.
 ```
 
 study2
 ```{r}
 result2 <- prop.test(x = c(600, 619), n = c(2000, 2000))
 result2
+# The p-value is 0.5364. At the confidence level of 95%, we can conclude that there is no conclusive difference between the rates of mild complication after hernia repair using open and laparoscopic surgical approaches, in another word, the risk is the same.
 ```
 
 **B.** Suppose that prior to the studies, the researchers established an equivalence threshold of 6 percentage points.  Using the confidence intervals, which studies (if any) showed a conclusive similarity between surgical approaches for the complication rate.  Explain why.
@@ -455,6 +489,7 @@ result2
 ```{r}
 result1$conf.int[2] - result1$conf.int[1]
 result2$conf.int[2] - result2$conf.int[1]
+# The second study showed a conclusive similarity between surgical approaches for the complication rate. As the length of the 95% confidence interval for the study 2 is 0.05805547, which is less than 0.06, so we regard that there is a conclusive similarity, while the 95% CI for the study 1 is 0.2792789, which is greater than 0.06, so we can detect there is a conclusive difference rather than a conclusive similarity.
 ```
 
 **A.** If the data from the studies were combined, what is the smallest equivalence threshold that would identify a conclusive similarity between the surgical approaches?
@@ -463,6 +498,7 @@ result2$conf.int[2] - result2$conf.int[1]
 result3 <- prop.test(c(630, 654), c(2100, 2100))
 result3
 result3$conf.int[2] - result3$conf.int[1]
+# The smallest equivalence threshold that would identify a conclusive similarity between the surgical approaches is 0.05668084.
 ```
 
 # 10.  Joint Distributions
@@ -473,7 +509,9 @@ linear
 
 **B.** Explain why predictions from a conditional distribution generally have smaller prediction error than predictions from the marginal distribution.
 
+When the two variables are independent, the conditional distribution is the same as the marginal distribution. The prediction errors are the same in this situation.
 
+When the two variables are dependent, we always use the mean square error to evaluate the prediction error. Considering that the MSE is equal to variance plus squared bias and a good estimator is always an unbiased estimator, we just need to compare the variance of two situations. As the ocnditional variance is less than the variance, we can get that the prediction from conditional distribution have smaller prediction error than predictions from marginal distribution.
 
 **A.** Use the CLT shortcut to calculate the 95% confidence interval for the correlation of arm circumference and arm length using the NHANES dataset.  Is the sample correlation a reasonable measure of association for this data?
 
