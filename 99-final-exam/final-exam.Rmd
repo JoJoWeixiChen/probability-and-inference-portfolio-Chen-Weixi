@@ -509,7 +509,8 @@ linear
 
 **B.** Explain why predictions from a conditional distribution generally have smaller prediction error than predictions from the marginal distribution.
 
-
+When the two variables are independent, the conditional distribution is same as the marginal distribution, so the prediction error is same in this situation.
+When the two variables are correlated, we usually use the mean square error MSE to calculate the prediction error and a good estimator is always an unbiased estimator. However, the predictions from a conditional distribution tends to have a less variance so it has a less mean square error than the predictions from the marginal distribution.
 
 **A.** Use the CLT shortcut to calculate the 95% confidence interval for the correlation of arm circumference and arm length using the NHANES dataset.  Is the sample correlation a reasonable measure of association for this data?
 
