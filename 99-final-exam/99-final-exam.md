@@ -204,12 +204,12 @@ y <- c(y, D)
 plot(x, y, main = "Relationship between number of doors and difference in probabilities", xlab = "number of doors", ylab = "difference in probabilities", type = "b")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-5-1.png)<!-- --> The plot
-makes sense. When you choose the strategy1, the probability of winning
-the game is $\\frac{1}{N}$. When you choose strategy2, the probability
-of winning the game is $\\frac{N-1}{N(N-2)}$. As the increasing of N,
-the difference between (N-1) and (N-2) getting smaller, and the
-difference between the two probabilities getting smaller.
+![](99-final-exam_files/figure-gfm/unnamed-chunk-5-1.png)<!-- --> The
+plot makes sense. When you choose the strategy1, the probability of
+winning the game is $\\frac{1}{N}$. When you choose strategy2, the
+probability of winning the game is $\\frac{N-1}{N(N-2)}$. As the
+increasing of N, the difference between (N-1) and (N-2) getting smaller,
+and the difference between the two probabilities getting smaller.
 
 # 2. Probability
 
@@ -248,14 +248,17 @@ P(D-\|T-). We can get the table as:
 | T- (column proportion) |  0.15   |  0.95   |           |
 |      column total      |  0.001  |  0.999  |     1     |
 
-$$
 p(D-) = 1 - P(D+) = 1 - 0.001 = 0.999
-P(D- & T-) = P(T-\|D-)\*P(D-) = 0.95\*0.999 = 0.94905
+
+P(D- & T-) = P(T-\|D-)*P(D-) = 0.95*0.999 = 0.94905
+
 P(T-\|D+) = 1 - P(T+\|D+) = 1 - 0.85 = 0.15
-P(D+ & T-) = P(T-\|D+)\*P(D+) = 0.15\*0.001 = 0.00015
+
+P(D+ & T-) = P(T-\|D+)*P(D+) = 0.15*0.001 = 0.00015
+
 P(T-) = P(D- & T-) + P(D+ & T-) = 0.94905 + 0.00015 = 0.9492
+
 P(D-\|T-) = P(D- & T-)/P(T-) = 0.94905/0.9492 = 0.99984
-$$
 
 **A** Create a plot that shows how the **positive** predictive value as
 a function of the prevalence of disease, P(D+).
@@ -273,7 +276,7 @@ ppv <- prob_dptp/prob_tp
 plot(prevalence, ppv, main = "Relationship betweenPrevalence and PPV", xlab = "Prevalence", ylab = "PPV")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 # 3. Discrete Distributions
 
@@ -321,13 +324,13 @@ for (i in 1:1e3) {
 plot(density(class), main = "The density of average yearly hospital charge of a class", xlab = "average yearly hospital charges")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 hist(class, main = "The histogram of average yearly hospital charge of a class", xlab = "average yearly hospital charges")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->
 
 **A**. What is the probability that a randomly selected class of size 30
 students will have less than 10 students with zero yearly hospital
@@ -406,7 +409,7 @@ box()
 title(xlab = "Femur Length", ylab = "P(Male | femur length)")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 # 5. Expectation and Variance
 
@@ -511,13 +514,13 @@ for (i in 1:1e3) {
 plot(density(data), main = "Density curve for the sampling distribution of the median")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 ``` r
 hist(data, main = "Histogram for the sampling distribution of the median")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-18-2.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-18-2.png)<!-- -->
 
 **B.** Below is the CDF function for the kth order statistic when the
 underlying distribution is log normal with *μ* = 0 and *σ* = 1. Create a
@@ -533,7 +536,7 @@ curve(Fk(x, 51, 101), add = TRUE, col = "red")
 legend("bottomright", legend = c("cdf", "ecdf"), lty = 1, col = c("red", "black"))
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 **A.** Of the 25th, 50th, and 75th quantiles of the distribution from
 **B**, which will have the tightest 95% CI? (Show the sampling
@@ -577,7 +580,7 @@ lines(density(quantile3), col = "green")
 legend("topright", legend = c("25th quantile", "50th quantile", "75th quantile"), lty = 1, col = c("black", "red", "green"))
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ``` r
 # From the plot and confidence intervals we got, we can get that the 25th quantile has the tightest 95% CI.
@@ -604,7 +607,7 @@ sd1 = sd(data)
 curve(dnorm(x, mean = mu1, sd = sd1), xlim = c(150, 200), main = "The estimated density of standing height for adult (age>18) males", xlab = "standing height", ylab = "density")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 **B.** Estimate the distribution of BMI for adult (age \> 18) females
 using using the method of moment method with the gamma distribution.
@@ -619,7 +622,7 @@ scale1 <- s2/mu2
 curve(dgamma(x, shape = shape1, scale = scale1), xlim = c(0, 80), main = "The estimated density of BMI for adult (age>18) females", xlab = "BMI", ylab = "Density")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 **A.** Estimate the distribution of creatinine (SCr) for adults (age \>
 18) using the kernel density method with a Gaussian kernel. Create a
@@ -630,7 +633,7 @@ data3 <- d1 %>% filter(age > 18 & !is.na(SCr)) %>% pull(SCr)
 plot(density(data3, adjust = 2, kernel = "gaussian"), main = "The estimated density of SCr for adults", xlab = "SCr")
 ```
 
-![](final-exam_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](99-final-exam_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 # 8. Sample from an estimated distribution
 

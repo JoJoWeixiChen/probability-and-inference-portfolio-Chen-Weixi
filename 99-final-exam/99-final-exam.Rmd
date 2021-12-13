@@ -1,6 +1,6 @@
 ---
 title: "Final Exam"
-output: html_document
+output: github_document
 ---
 
 # Instructions
@@ -150,14 +150,18 @@ We can get the table as:
 | T- (column proportion) |  0.15 | 0.95  |
 | column total  | 0.001  |  0.999 | 1  |
 
-$$
 p(D-) = 1 - P(D+) = 1 - 0.001 = 0.999
+
 P(D- & T-) = P(T-|D-)*P(D-) = 0.95*0.999 = 0.94905
+
 P(T-|D+) = 1 - P(T+|D+) = 1 - 0.85 = 0.15
+
 P(D+ & T-) = P(T-|D+)*P(D+) = 0.15*0.001 = 0.00015
+
 P(T-) = P(D- & T-) + P(D+ & T-) = 0.94905 + 0.00015 = 0.9492
+
 P(D-|T-) = P(D- & T-)/P(T-) = 0.94905/0.9492 = 0.99984
-$$
+
 
 **A** Create a plot that shows how the **positive** predictive value as a function of the prevalence of disease, P(D+).
 
